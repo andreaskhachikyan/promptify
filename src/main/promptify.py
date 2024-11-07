@@ -24,10 +24,7 @@ async def generate_prompt(characteristics: str) -> str:
     logging.info(f"Creating prompt for characteristics: {characteristics}")
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages=[
-            {"role": "user",
-             "content": f"Please generate a detailed prompt for DALL-E using these characteristics: {characteristics}"}
-        ]
+        messages=[{"role": "user", "content": f"Please generate a detailed prompt for DALL-E using these characteristics: {characteristics}"}]
     )
     prompt = response['choices'][0]['message']['content']
     logging.info(f"Refined prompt: {prompt}")
@@ -48,8 +45,7 @@ async def generate_image(prompt: str) -> str:
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     characteristics = update.message.text[len('/imggen '):]
-    logging.info(
-        f"Image generation request from {update.effective_user.username or update.effective_user.id} with description: {characteristics}")
+    logging.info(f"Image generation request from {update.effective_user.username or update.effective_user.id} with description: {characteristics}")
     try:
         refined_prompt = await generate_prompt(characteristics)
         image_url = await generate_image(refined_prompt)
@@ -57,11 +53,10 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         logging.info(f"Image successfully sent to user: {update.effective_user.username or update.effective_user.id}")
     except Exception as e:
         logging.error(f"Error during image processing: {e}")
-        await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       text="Oops! Something went wrong with the image generation. Try again!")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="Oops! Something went wrong with the image generation. Try again!")
 
 
-async def run() -> None:
+def run() -> None:
     application = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
     application.add_handler(MessageHandler(filters.COMMAND & filters.Regex(r'^/imggen'), handle_text))
     application.add_handler(MessageHandler(filters.COMMAND & filters.Regex(r'^/start'), start))
